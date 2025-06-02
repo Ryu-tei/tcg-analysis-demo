@@ -1,4 +1,4 @@
-import streamlit as st
+kimport streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import gspread
@@ -157,12 +157,16 @@ if df.empty:
     st.info("フィルタ条件に該当するデータがありません。")
 else:
     display_cols = ["編集リンク", "日付", "イベント名", "氏名", "使用デッキ", "先手後手", "相手デッキ", "相手プレイヤ", "勝敗表記", "環境", "メモ"]
-    # 「編集リンク」がない場合は元の編集用URLを表示
     if "編集リンク" not in df.columns:
         display_cols[0] = "編集用URL"
-    # HTMLテーブルをスクロール可能なdivで囲む
-    html_table = f'<div style="max-height:400px; overflow-y:auto;">{df[display_cols].to_html(index=False, escape=False)}</div>'
-    st.markdown(html_table, unsafe_allow_html=True)
+    # HTML テーブルをスクロール可能なコンテナで囲む
+    html_table = df[display_cols].to_html(index=False, escape=False)
+    scroll_container = f"""
+    <div style=\"max-height:400px; overflow-y:auto; border:1px solid #ddd; padding:8px;\">
+        {html_table}
+    </div>
+    """
+    st.markdown(scroll_container, unsafe_allow_html=True)
 
 st.markdown("---")
 st.caption("※ このダッシュボードは閲覧専用リンクで共有可能です。フィルタ操作やグラフ閲覧は誰でもできますが、スプレッドシート本体の編集はできません。")
