@@ -159,7 +159,6 @@ else:
     display_cols = ["編集リンク", "日付", "イベント名", "氏名", "使用デッキ", "先手後手", "相手デッキ", "相手プレイヤ", "勝敗表記", "環境", "メモ"]
     if "編集リンク" not in df.columns:
         display_cols[0] = "編集用URL"
-    # HTML テーブルをスクロール可能なコンテナで囲む（横もスクロール可）、セル内テキストの折り返しを防止
     html_table = df[display_cols].to_html(index=False, escape=False)
     scroll_container = f"""
     <style>
