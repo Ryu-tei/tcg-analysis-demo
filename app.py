@@ -162,7 +162,7 @@ else:
     # HTML テーブルをスクロール可能なコンテナで囲む（横もスクロール可）
     html_table = df[display_cols].to_html(index=False, escape=False)
     scroll_container = f"""
-    <div style=\"max-height:400px; max-width:100%; overflow:auto; border:1px solid #ddd; padding:8px;\">
+    <div style=\"max-height:200px; max-width:400%; overflow:auto; border:1px solid #ddd; padding:8px;\">
         {html_table}
     </div>
     """
