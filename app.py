@@ -160,8 +160,10 @@ else:
     # 「編集リンク」がない場合は元の編集用URLを表示
     if "編集リンク" not in df.columns:
         display_cols[0] = "編集用URL"
-    html_table = df[display_cols].to_html(index=False, escape=False)
+    # HTMLテーブルをスクロール可能なdivで囲む
+    html_table = f'<div style="max-height:400px; overflow-y:auto;">{df[display_cols].to_html(index=False, escape=False)}</div>'
     st.markdown(html_table, unsafe_allow_html=True)
 
 st.markdown("---")
 st.caption("※ このダッシュボードは閲覧専用リンクで共有可能です。フィルタ操作やグラフ閲覧は誰でもできますが、スプレッドシート本体の編集はできません。")
+
