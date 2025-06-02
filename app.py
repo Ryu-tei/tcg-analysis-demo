@@ -26,9 +26,10 @@ if "win_flag" not in df.columns and "勝敗" in df.columns:
 # 勝敗表示用の列（数値を文字列に変換）
 df["勝敗表記"] = df["win_flag"].map({1: "勝ち", 0: "負け"})
 
-# 編集用URL をハイパーリンクに変換
+# --- 編集用URL をハイパーリンク化する列を追加 ---
 if "編集用URL" in df.columns:
-    df["編集リンク"] = df["編集用URL"].apply(lambda x: f"[編集]({x})")
+    df["編集リンク"] = df["編集用URL"].apply(
+        lambda x: f'<a href="{x}" target="_blank">編集</a>'
 
 # -------------------------------------
 # サイドバー: フィルタリング機能
@@ -163,6 +164,23 @@ else:
         # 編集リンクがあれば編集用URLの代わりにリンク列を表示
         display_cols[0] = "編集リンク"
     st.dataframe(df[display_cols].reset_index(drop=True), use_container_width=True)
+# ---------- 詳細テーブル表示（HTML を使ってリンクを有効化） ----------
+st.subheader("フィルタ結果: 詳細テーブル")
+if df.empty:
+    st.info("フィルタ条件に該当するデータがありません。")
+else:
+    display_cols = [
+        "編集リンク", "日付", "イベント名", "氏名", "使用デッキ",
+        "先手後手", "相手デッキ", "相手プレイヤ", "勝敗表記", "環境", "メモ"
+    ]
+    # 編集リンクが存在しなければ「編集用URL」に差し替え
+    if "編集リンク" not in df.columns:
+        display_cols[0] = "編集用URL"
 
+    # DataFrame→HTML（escape=False でリンクタグをそのまま出力）
+    html_table = df[display_cols].to_html(index=False, escape=False)
+
+    # unsafe_allow_html=True で HTML を埋め込む
+    st.markdown(html_table, unsafe_allow_html=True)
 st.markdown("---")
 st.caption("※ このダッシュボードは閲覧専用リンクで共有可能です。フィルタ操作やグラフ閲覧は誰でもできますが、スプレッドシート本体の編集はできません。")
