@@ -159,10 +159,14 @@ else:
     display_cols = ["編集リンク", "日付", "イベント名", "氏名", "使用デッキ", "先手後手", "相手デッキ", "相手プレイヤ", "勝敗表記", "環境", "メモ"]
     if "編集リンク" not in df.columns:
         display_cols[0] = "編集用URL"
-    # HTML テーブルをスクロール可能なコンテナで囲む（横もスクロール可）
+    # HTML テーブルをスクロール可能なコンテナで囲む（横もスクロール可）、セル内テキストの折り返しを防止
     html_table = df[display_cols].to_html(index=False, escape=False)
     scroll_container = f"""
-    <div style=\"max-height:200px; max-width:400%; overflow:auto; border:1px solid #ddd; padding:8px;\">
+    <style>
+    table {{ border-collapse: collapse; }}
+    th, td {{ white-space: nowrap; padding: 4px 8px; border: 1px solid #ddd; }}
+    </style>
+    <div style=\"max-height:400px; max-width:100%; overflow:auto; border:1px solid #ddd; padding:8px;\">
         {html_table}
     </div>
     """
