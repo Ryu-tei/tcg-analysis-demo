@@ -39,7 +39,6 @@ for _, row in df.iterrows():
     opp = str(row.get("相手プレイヤ", ""))
     deck = str(row.get("使用デッキ", ""))
     opp_deck = str(row.get("相手デッキ", ""))
-    # 順序付け
     if name <= opp:
         rows.append(row)
     else:
@@ -60,8 +59,6 @@ for _, row in df.iterrows():
             new_row["勝敗表記"] = "勝ち"
         rows.append(new_row)
 normalized_df = pd.DataFrame(rows)
-
-# ペアキー作成して重複除去
 
 def make_pair_key(row):
     date_str = row.get("日付").strftime("%Y%m%d") if pd.notna(row.get("日付")) else ""
@@ -98,9 +95,9 @@ if "イベント名" in filtered.columns:
     if selected_event != "All":
         filtered = filtered[filtered["イベント名"] == selected_event]
 
-# 3. 氏名選択 (氏名 or 相手プレイヤ 両方から選択可能)
-names = set(filtered.get("氏名", []).dropna().unique()) | set(filtered.get("相手プレイヤ", []).dropna().unique())
-player_options = ["All"] + sorted(names)
+# 3. 氏名選択 (氏名 or 相手プレイヤ 両方から選択)
+names_all = set(df.get("氏名", []).dropna().unique()) | set(df.get("相手プレイヤ", []).dropna().unique())
+player_options = ["All"] + sorted(names_all)
 selected_player = st.sidebar.selectbox("氏名選択", player_options, key="player_select")
 if selected_player != "All":
     filtered = filtered[(filtered["氏名"] == selected_player) | (filtered["相手プレイヤ"] == selected_player)]
@@ -137,7 +134,7 @@ if "メモ" in filtered.columns:
     if memo_query:
         filtered = filtered[filtered["メモ"].str.contains(memo_query, case=False, na=False)]
 
-# デッキフィルタ：使用 or 相手
+# デッキフィルタ: 使用 or 相手
 df_tmp = filtered
 if selected_deck != "All" and selected_opp_deck != "All" and selected_deck == selected_opp_deck:
     filtered = df_tmp[(df_tmp["使用デッキ"] == selected_deck) & (df_tmp["相手デッキ"] == selected_deck)]
