@@ -103,12 +103,12 @@ if selected_player != "All":
     filtered = filtered[(filtered["氏名"] == selected_player) | (filtered["相手プレイヤ"] == selected_player)]
 
 # 4. デッキ選択
- deck_opts = ["All"] + sorted(filtered["使用デッキ"].dropna().unique())
- selected_deck = st.sidebar.selectbox("デッキ選択", deck_opts, key="deck_select")
+deck_opts = ["All"] + sorted(filtered["使用デッキ"].dropna().unique())
+selected_deck = st.sidebar.selectbox("デッキ選択", deck_opts, key="deck_select")
 
 # 5. 相手デッキ選択
- opp_deck_opts = ["All"] + sorted(filtered["相手デッキ"].dropna().unique())
- selected_opp_deck = st.sidebar.selectbox("相手のデッキ", opp_deck_opts, key="opp_deck_select")
+opp_deck_opts = ["All"] + sorted(filtered["相手デッキ"].dropna().unique())
+selected_opp_deck = st.sidebar.selectbox("相手のデッキ", opp_deck_opts, key="opp_deck_select")
 
 # 6. 先攻/後攻 フィルタ
 hand_options = ["All"] + sorted(filtered["先手後手"].dropna().unique())
@@ -241,7 +241,7 @@ with col2:
                     y=group_vs["win_flag"],
                     text=group_vs["勝率"],
                     textposition="auto",
-                    marker_color="#FFC107",
+                    marker_color="#FFC017",
                 )
             ]
         )
