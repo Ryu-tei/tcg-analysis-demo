@@ -202,16 +202,15 @@ else:
     display_cols = ["編集リンク", "日付", "イベント名", "氏名", "使用デッキ", "先手後手", "相手デッキ", "相手プレイヤ", "勝敗表記", "環境", "メモ"]
     if "編集リンク" not in df.columns:
         display_cols[0] = "編集用URL"
-    # HTML テーブルをスクロール可能なコンテナで囲む
+    # HTML テーブルをスクロール可能なコンテナで囲む（横もスクロール可）
     html_table = df[display_cols].to_html(index=False, escape=False)
     scroll_container = f"""
-    <div style=\"max-height:400px; overflow-y:auto; border:1px solid #ddd; padding:8px;\">
+    <div style=\"max-height:400px; max-width:100%; overflow:auto; border:1px solid #ddd; padding:8px;\">
         {html_table}
     </div>
     """
     st.markdown(scroll_container, unsafe_allow_html=True)
-st.markdown("---")
-st.caption(
+    st.caption(
     "※ このダッシュボードは閲覧専用リンクで共有可能です。"
     "フィルタ操作やグラフ閲覧は誰でもできますが、"
     "スプレッドシート本体の編集はできません。"
