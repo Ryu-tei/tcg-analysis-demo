@@ -199,32 +199,17 @@ st.subheader("フィルタ結果: 詳細テーブル")
 if df.empty:
     st.info("フィルタ条件に該当するデータがありません。")
 else:
-    display_cols = [
-        "編集リンク", "日付", "イベント名", "氏名", "使用デッキ",
-        "先手後手", "相手デッキ", "相手プレイヤ", "勝敗表記", "環境", "メモ"
-    ]
+    display_cols = ["編集リンク", "日付", "イベント名", "氏名", "使用デッキ", "先手後手", "相手デッキ", "相手プレイヤ", "勝敗表記", "環境", "メモ"]
     if "編集リンク" not in df.columns:
         display_cols[0] = "編集用URL"
+    # HTML テーブルをスクロール可能なコンテナで囲む
     html_table = df[display_cols].to_html(index=False, escape=False)
     scroll_container = f"""
-    <style>
-        table {{ border-collapse: collapse; width: 100%; }}
-        th, td {{
-            white-space: normal;
-            padding: 4px 8px;
-            border: 1px solid #ddd;
-            text-align: left;
-            vertical-align: top;
-            max-width: 300px;
-            word-break: break-word;
-        }}
-    </style>
-    <div style="max-height:400px; max-width:100%; overflow:auto; border:1px solid #ddd; padding:8px;">
+    <div style=\"max-height:400px; overflow-y:auto; border:1px solid #ddd; padding:8px;\">
         {html_table}
     </div>
     """
     st.markdown(scroll_container, unsafe_allow_html=True)
-
 st.markdown("---")
 st.caption(
     "※ このダッシュボードは閲覧専用リンクで共有可能です。"
