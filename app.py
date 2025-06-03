@@ -4,11 +4,14 @@ import plotly.graph_objects as go
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+import time
 
 # --- Google Sheets 読み込み設定 ---
-SPREADSHEET_URL = st.secrets['sheet_url']
-scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-credentials = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scopes)
+SPREADSHEET_URL = st.secrets["sheet_url"]
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+credentials = Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"], scopes=SCOPES
+)
 gc = gspread.authorize(credentials)
 sh = gc.open_by_url(SPREADSHEET_URL)
 worksheet = sh.sheet1
@@ -31,14 +34,22 @@ if "編集用URL" in df.columns:
     df["編集リンク"] = df["編集用URL"].apply(lambda x: f'<a href="{x}" target="_blank">編集</a>')
 
 # -------------------------------------
-# サイドバー: フィルタリング機能
+# サイドバー: データ数表示 & フィルタリング機能
 # -------------------------------------
 st.sidebar.title("フィルター設定")
+
+# 総データ数表示
+total_count = len(df)
+st.sidebar.markdown(f"**総データ数**: {total_count} 件")
 
 # 1. 日付レンジ選択
 def_min_date = df["日付"].min()
 def_max_date = df["日付"].max()
-date_range = st.sidebar.date_input("日付範囲", [def_min_date, def_max_date], key="date_range")
+date_range = st.sidebar.date_input(
+    "日付範囲",
+    [def_min_date, def_max_date],
+    key="date_range"
+)
 df = df[(df["日付"] >= date_range[0]) & (df["日付"] <= date_range[1])]
 
 # 2. イベント名選択
@@ -56,11 +67,11 @@ selected_player = st.sidebar.selectbox("氏名選択", player_options, key="play
 if selected_player != "All":
     df = df[df["氏名"] == selected_player]
 
-# 4. デッキ選択 (使用または相手を対象, "All"対応)
+# 4. デッキ選択 ("All"対応)
 deck_options = ["All"] + sorted(df["使用デッキ"].dropna().unique())
 selected_deck = st.sidebar.selectbox("デッキ選択", deck_options, key="deck_select")
 
-# 5. 相手デッキ選択 (使用または相手を対象, "All"対応)
+# 5. 相手デッキ選択 ("All"対応)
 opponent_deck_options = ["All"] + sorted(df["相手デッキ"].dropna().unique())
 selected_opponent_deck = st.sidebar.selectbox("相手のデッキ", opponent_deck_options, key="opp_deck_select")
 
@@ -108,7 +119,7 @@ else:
     labels = ["勝ち", "負け"]
     values = [overall_counts.get(1, 0), overall_counts.get(0, 0)]
     fig_overall = go.Figure(data=[
-        go.Pie(labels=labels, values=values, hole=0.4, textinfo='label+percent')
+        go.Pie(labels=labels, values=values, hole=0.4, textinfo="label+percent")
     ])
     st.plotly_chart(fig_overall, use_container_width=True, key="overall_chart")
 
@@ -127,11 +138,28 @@ with col1:
         group_env["勝率"] = group_env["win_flag"].map(lambda x: f"{x:.1%}")
         fig_env = go.Figure(
             data=[
-                go.Bar(x=group_env["環境"], y=group_env["win_flag"], text=group_env["勝率"], textposition='auto', marker_color="#2196F3")
+                go.Bar(
+                    x=group_env["環境"],
+                    y=group_env["win_flag"],
+                    text=group_env["勝率"],
+                    textposition="auto",
+                    marker_color="#2196F3"
+                )
             ]
         )
-        fig_env.update_layout(yaxis=dict(range=[0,1], tickformat=".0%"), xaxis_tickangle=-45)
-        st.plotly_chart(fig_env, use_container_width=True, key="env_chart")
+        # フォントサイズ拡大
+        fig_env.update_layout(
+            yaxis=dict(range=[0,1], tickformat=".0%", tickfont=dict(size=14)),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=14)),
+            title_font=dict(size=16)
+        )
+        # インタラクティビティ無効化
+        st.plotly_chart(
+            fig_env,
+            use_container_width=True,
+            key="env_chart",
+            config={"staticPlot": True}
+        )
 
 # 相手デッキ別勝率
 with col2:
@@ -143,11 +171,26 @@ with col2:
         group_vs["勝率"] = group_vs["win_flag"].map(lambda x: f"{x:.1%}")
         fig_vs = go.Figure(
             data=[
-                go.Bar(x=group_vs["相手デッキ"], y=group_vs["win_flag"], text=group_vs["勝率"], textposition='auto', marker_color="#FFC107")
+                go.Bar(
+                    x=group_vs["相手デッキ"],
+                    y=group_vs["win_flag"],
+                    text=group_vs["勝率"],
+                    textposition="auto",
+                    marker_color="#FFC107"
+                )
             ]
         )
-        fig_vs.update_layout(yaxis=dict(range=[0,1], tickformat=".0%"), xaxis_tickangle=-45)
-        st.plotly_chart(fig_vs, use_container_width=True, key="opp_chart")
+        fig_vs.update_layout(
+            yaxis=dict(range=[0,1], tickformat=".0%", tickfont=dict(size=14)),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=14)),
+            title_font=dict(size=16)
+        )
+        st.plotly_chart(
+            fig_vs,
+            use_container_width=True,
+            key="opp_chart",
+            config={"staticPlot": True}
+        )
 
 st.markdown("---")
 
@@ -156,17 +199,35 @@ st.subheader("フィルタ結果: 詳細テーブル")
 if df.empty:
     st.info("フィルタ条件に該当するデータがありません。")
 else:
-    display_cols = ["編集リンク", "日付", "イベント名", "氏名", "使用デッキ", "先手後手", "相手デッキ", "相手プレイヤ", "勝敗表記", "環境", "メモ"]
+    display_cols = [
+        "編集リンク", "日付", "イベント名", "氏名", "使用デッキ",
+        "先手後手", "相手デッキ", "相手プレイヤ", "勝敗表記", "環境", "メモ"
+    ]
     if "編集リンク" not in df.columns:
         display_cols[0] = "編集用URL"
-    # HTML テーブルをスクロール可能なコンテナで囲む（横もスクロール可）
     html_table = df[display_cols].to_html(index=False, escape=False)
     scroll_container = f"""
-    <div style=\"max-height:400px; max-width:100%; overflow:auto; border:1px solid #ddd; padding:8px;\">
+    <style>
+        table {{ border-collapse: collapse; width: 100%; }}
+        th, td {{
+            white-space: normal;
+            padding: 4px 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+            vertical-align: top;
+            max-width: 300px;
+            word-break: break-word;
+        }}
+    </style>
+    <div style="max-height:400px; max-width:100%; overflow:auto; border:1px solid #ddd; padding:8px;">
         {html_table}
     </div>
     """
     st.markdown(scroll_container, unsafe_allow_html=True)
 
 st.markdown("---")
-st.caption("※ このダッシュボードは閲覧専用リンクで共有可能です。フィルタ操作やグラフ閲覧は誰でもできますが、スプレッドシート本体の編集はできません。")
+st.caption(
+    "※ このダッシュボードは閲覧専用リンクで共有可能です。"
+    "フィルタ操作やグラフ閲覧は誰でもできますが、"
+    "スプレッドシート本体の編集はできません。"
+)
