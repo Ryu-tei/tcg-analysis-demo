@@ -103,12 +103,12 @@ if selected_player != "All":
     filtered = filtered[(filtered["氏名"] == selected_player) | (filtered["相手プレイヤ"] == selected_player)]
 
 # 4. デッキ選択
-deck_opts = ["All"] + sorted(filtered["使用デッキ"].dropna().unique())
-selected_deck = st.sidebar.selectbox("デッキ選択", deck_opts, key="deck_select")
+ deck_opts = ["All"] + sorted(filtered["使用デッキ"].dropna().unique())
+ selected_deck = st.sidebar.selectbox("デッキ選択", deck_opts, key="deck_select")
 
 # 5. 相手デッキ選択
-opp_deck_opts = ["All"] + sorted(filtered["相手デッキ"].dropna().unique())
-selected_opp_deck = st.sidebar.selectbox("相手のデッキ", opp_deck_opts, key="opp_deck_select")
+ opp_deck_opts = ["All"] + sorted(filtered["相手デッキ"].dropna().unique())
+ selected_opp_deck = st.sidebar.selectbox("相手のデッキ", opp_deck_opts, key="opp_deck_select")
 
 # 6. 先攻/後攻 フィルタ
 hand_options = ["All"] + sorted(filtered["先手後手"].dropna().unique())
@@ -145,6 +145,37 @@ elif selected_opp_deck != "All":
 
 # --- メイン: グラフ・テーブル表示 ---
 st.title("TCG 対戦データ分析ダッシュボード")
+
+# 先攻 vs 後攻 の勝率比較
+st.subheader("先攻 / 後攻 勝率比較")
+if filtered.empty:
+    st.write("該当データなし")
+else:
+    first_count = len(filtered[filtered["先手後手"] == "先攻"])
+    second_count = len(filtered[filtered["先手後手"] == "後攻"])
+    first_win = len(filtered[(filtered["先手後手"] == "先攻") & (filtered["win_flag"] == 1)])
+    second_win = len(filtered[(filtered["先手後手"] == "後攻") & (filtered["win_flag"] == 1)])
+    rates = [first_win / first_count if first_count else 0, second_win / second_count if second_count else 0]
+    labels = ["先攻勝率", "後攻勝率"]
+    fig_turn = go.Figure(
+        data=[
+            go.Bar(
+                x=labels,
+                y=rates,
+                text=[f"{r:.1%}" for r in rates],
+                textposition='auto',
+                marker_color=["#4CAF50", "#F44336"]
+            )
+        ]
+    )
+    fig_turn.update_layout(
+        yaxis=dict(range=[0, 1], tickformat=".0%", tickfont=dict(size=14)),
+        xaxis=dict(tickfont=dict(size=14)),
+        title_font=dict(size=16)
+    )
+    st.plotly_chart(fig_turn, use_container_width=True, config={"staticPlot": True})
+
+st.markdown("---")
 
 # 勝敗円グラフ
 st.subheader("勝敗円グラフ")
@@ -261,4 +292,3 @@ else:
         "フィルタ操作やグラフ閲覧は誰でもできますが、"
         "スプレッドシート本体の編集はできません。"
     )
-
